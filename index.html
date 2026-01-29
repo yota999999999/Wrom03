@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Spin Smooth Side FINAL</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:transparent;
+    text-align:center;
+}
+.container{
+    width:220px;
+    margin:20px auto;
+}
+.spin-box{
+    background:rgba(0,0,0,.6);
+    border-radius:14px;
+    padding:14px;
+}
+.slot{
+    width:90px;
+    height:90px;
+    margin:auto;
+    border-radius:12px;
+    background:#111;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 0 18px gold;
+    overflow:hidden;
+}
+.slot img{
+    width:50px;
+    height:50px;
+}
+.spin-btn{
+    width:55px;
+    height:55px;
+    border-radius:50%;
+    border:2px solid white;
+    background:rgba(255,255,255,.15);
+    margin-top:12px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <div class="spin-box">
+        <div class="slot">
+            <img src="zonk.png" id="spinImg">
+        </div>
+    </div>
+    <button class="spin-btn" onclick="spin()"></button>
+</div>
+
+<!-- AUDIO -->
+<audio id="spinSound" src="spin.mp3"></audio>
+<audio id="zonkAudio" src="zonk1.mp3"></audio>
+<audio id="mitosAudio" src="mitos1.mp3"></audio>
+<audio id="jpAudio" src="jp.mp3"></audio>
+
+<script>
+/* DATA HADIAH */
+const prizes={
+    Z:{ img:"zonk.png", audio:"zonkAudio" },
+    MT:{ img:"mitos.png", audio:"mitosAudio" },
+    K:{ img:"kink.png", audio:"jpAudio" },   // 0,5%
+    LB:{ img:"wrom.png", audio:"jpAudio" }   // 0,3%
+};
+
+/* 🎯 PERSENTASE BARU (1000 POOL) */
+const winPool=[
+    { id:"Z",  w:892 },  // 89,2%
+    { id:"MT", w:100 },  // 10%
+    { id:"K",  w:5 },    // 0,5%
+    { id:"LB", w:3 }     // 0,3%
+];
+
+/* VISUAL SAAT SPIN */
+const visualKeys=["Z","MT","K","LB"];
+
+function pickResult(){
+    let pool=[];
+    winPool.forEach(h=>{
+        for(let i=0;i<h.w;i++) pool.push(h.id);
+    });
+    return pool[Math.floor(Math.random()*pool.length)];
+}
+
+function spin(){
+    const img=document.getElementById("spinImg");
+    const spinSound=document.getElementById("spinSound");
+
+    spinSound.loop=true;
+    spinSound.currentTime=0;
+    spinSound.play().catch(()=>{});
+
+    const start=Date.now();
+    const duration=2500;
+
+    function animate(){
+        const now=Date.now();
+        const progress=(now-start)/duration;
+
+        const offset=Math.sin(now/60)*(20*(1-progress));
+        img.style.transform=`translateX(${offset}px)`;
+
+        img.src=prizes[
+            visualKeys[Math.floor(Math.random()*visualKeys.length)]
+        ].img;
+
+        if(progress<1){
+            requestAnimationFrame(animate);
+        }else{
+            finish();
+        }
+    }
+
+    animate();
+
+    function finish(){
+        spinSound.pause();
+        spinSound.currentTime=0;
+        img.style.transform="translateX(0)";
+
+        const win=pickResult();
+        img.src=prizes[win].img;
+
+        if(prizes[win].audio){
+            document.getElementById(prizes[win].audio).play().catch(()=>{});
+        }
+    }
+}
+</script>
+
+</body>
+</html>
